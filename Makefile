@@ -8,7 +8,7 @@ SRC_EXT = cpp
 # Path to the source directory, relative to the makefile
 SRC_PATH = ./src/
 # Space-separated pkg-config libraries used by this project
-LIBS =
+LIBS = glfw3
 # General compiler flags
 COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g
 # Additional release-specific flags
@@ -68,7 +68,7 @@ INSTALL_DATA = $(INSTALL) -m 644
 # Append pkg-config specific libraries if need be
 ifneq ($(LIBS),)
 	COMPILE_FLAGS += $(shell pkg-config --cflags $(LIBS))
-	LINK_FLAGS += $(shell pkg-config --libs $(LIBS))
+	LINK_FLAGS += $(shell pkg-config --static --libs $(LIBS))
 endif
 
 # Verbose option, to output compile and link commands

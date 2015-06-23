@@ -1,18 +1,13 @@
 #include "Listener.hpp"
+#include "Application.hpp"
 
-int main(int argc, char** argv) 
+int main() 
 {
-    LeapListener listener;
-    Leap::Controller controller;
-
-    controller.addListener(listener);
-
-    // Keep this process running until Enter is pressed
-    std::cout << "Press Enter to quit..." << std::endl;
-    std::cin.get();
-
-    // Remove the sample listener when done
-    controller.removeListener(listener);
+   	Application app;
+   	if(app.Initialize()==false)
+   		return -1;
+   	
+   	app.Run();
 
     return 0;
 }
