@@ -3,7 +3,7 @@
 int main(int argc, char** argv) 
 {
     LeapListener listener;
-    Controller controller;
+    Leap::Controller controller;
 
     controller.addListener(listener);
 
