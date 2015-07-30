@@ -33,6 +33,10 @@ void LeapListener::onFrame(const Controller& controller)
 			{
 				std::cout << "Hand forms fist!" << std::endl;
 			}
+            else if(isHand(hand))
+            {
+                std::cout << "Hand forms spread palm!" << std::endl;
+            }
     	}
     	
     }
@@ -55,4 +59,26 @@ bool LeapListener::isFist(const Leap::Hand& hand)
 	}
 
 	return true;
+}
+
+
+
+bool LeapListener::isHand(const Leap::Hand& hand)
+{
+    auto fingers = hand.fingers();
+    auto direction = hand.direction();
+
+    for(const auto& finger : fingers)
+    {        
+        auto fingerDir = finger.direction();
+        
+        //THRESHOLD is a random float value (0.4f)
+        if(direction.angleTo(fingerDir)>0.4f)
+        {    
+            std::cout << direction.angleTo(fingerDir) << std::endl;
+            return false;
+        }
+    }
+
+    return true;
 }

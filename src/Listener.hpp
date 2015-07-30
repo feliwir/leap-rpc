@@ -16,7 +16,7 @@ public:
 
 
  	bool isFist(const Leap::Hand& hand);
-
+	bool isHand(const Leap::Hand& hand);
 private:
 	Leap::Frame m_last;
 	State m_cState;
