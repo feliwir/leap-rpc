@@ -1,4 +1,5 @@
 #include "Listener.hpp"
+#include "Utility.hpp"
 using namespace Leap;
 
 void LeapListener::onConnect(const Controller& controller) 
@@ -29,13 +30,17 @@ void LeapListener::onFrame(const Controller& controller)
 
     	for(auto& hand : hands)
     	{
-			if(isFist(hand))
+			if(isRock(hand))
 			{
-				std::cout << "Hand forms fist!" << std::endl;
+				std::cout << "Hand forms rock!" << std::endl;
 			}
-            else if(isHand(hand))
+            else if(isPaper(hand))
             {
-                std::cout << "Hand forms spread palm!" << std::endl;
+                std::cout << "Hand forms paper!" << std::endl;
+            }
+            else if(isScissor(hand))
+            {
+                std::cout << "Hand forms scissor!" << std::endl;
             }
     	}
     	
@@ -45,7 +50,7 @@ void LeapListener::onFrame(const Controller& controller)
 }
 
 
-bool LeapListener::isFist(const Leap::Hand& hand)
+bool LeapListener::isRock(const Leap::Hand& hand)
 {
 	auto fingers = hand.fingers();
 	auto center = hand.palmPosition();
@@ -62,8 +67,7 @@ bool LeapListener::isFist(const Leap::Hand& hand)
 }
 
 
-
-bool LeapListener::isHand(const Leap::Hand& hand)
+bool LeapListener::isPaper(const Leap::Hand& hand)
 {
     auto fingers = hand.fingers();
     auto direction = hand.direction();
@@ -73,11 +77,56 @@ bool LeapListener::isHand(const Leap::Hand& hand)
         auto fingerDir = finger.direction();
         
         //THRESHOLD is a random float value (0.4f)
-        if(direction.angleTo(fingerDir)>0.4f)
+        if(Util::ToDeg(direction.angleTo(fingerDir))>20.0f)
         {    
-            std::cout << direction.angleTo(fingerDir) << std::endl;
+            std::cout << Util::ToDeg(direction.angleTo(fingerDir)) << std::endl;
             return false;
         }
+    }
+
+    return true;
+}
+
+bool LeapListener::isScissor(const Leap::Hand& hand)
+{
+    auto fingers = hand.fingers();
+    auto center = hand.palmPosition();
+    Leap::Finger index, middle;
+
+    for(const auto& finger : fingers)
+    {
+        auto type = finger.type();
+        auto tip = finger.tipPosition();
+
+        if(type==Leap::Finger::TYPE_INDEX)
+        {
+            index = finger;
+            if(tip.distanceTo(center)<50.0f)
+            {
+                std::cout << tip.distanceTo(center) << std::endl;
+                return false;
+            }
+        }
+        else if(type==Leap::Finger::TYPE_MIDDLE)
+        {
+            middle = finger;
+            if(tip.distanceTo(center)<80.0f)
+            {
+                std::cout << tip.distanceTo(center) << std::endl;
+                return false;
+            }
+        }
+        else
+        {
+            if(tip.distanceTo(center)>80.0f)
+                return false;
+        }
+    }
+
+    if(Util::ToDeg(middle.direction().angleTo(index.direction()))<5.0f)
+    {    
+        std::cout << Util::ToDeg(middle.direction().angleTo(index.direction())) << std::endl;
+        return false;
     }
 
     return true;

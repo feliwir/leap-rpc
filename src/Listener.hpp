@@ -15,8 +15,9 @@ public:
     virtual void onFrame(const Leap::Controller&);
 
 
- 	bool isFist(const Leap::Hand& hand);
-	bool isHand(const Leap::Hand& hand);
+ 	bool isRock(const Leap::Hand& hand);
+	bool isPaper(const Leap::Hand& hand);
+	bool isScissor(const Leap::Hand& hand);
 private:
 	Leap::Frame m_last;
 	State m_cState;
