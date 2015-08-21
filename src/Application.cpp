@@ -1,4 +1,5 @@
 #include "Application.hpp"
+#include "GameHandler.hpp"
 #include <iostream>
 
 bool Application::Initialize()
@@ -59,10 +60,32 @@ void Application::Run()
 	   		case Handler::WAITING:
 	   			text.setString("Waiting!!");
 	   			break;
+	   		case Handler::PREPARE1:
+	   		case Handler::PREPARE2:
+	   			text.setString("Rock!!");
+	   			break;
+	   		case Handler::PREPARE3:
+	   		case Handler::PREPARE4:
+	   			text.setString("Scissor!!");
+	   			break;
+	   		case Handler::EVALUATE:
+	   			text.setString("Paper!!");
+	   			break;
+	   		case Handler::ROCK:
+	   			text.setString("R!!");
+	   			break;
+	   		case Handler::PAPER:
+	   			text.setString("P!!");
+	   			break;
+	   		case Handler::SCISSOR:
+	   			text.setString("S!!");
+	   			break;
 	   		default:
 	   			text.setString("Unknown State");
 	   			break;
 	   };
+
+
 
 	   auto textBounds = text.getLocalBounds();
 	   auto textPos = sf::Vector2f(m_winWidth/2-textBounds.width/2,
