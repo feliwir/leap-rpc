@@ -1,7 +1,6 @@
 #pragma once
 #include <Leap.h>
 
-
 class LeapListener : public Leap::Listener 
 {
 private:

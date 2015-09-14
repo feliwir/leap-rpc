@@ -30,8 +30,7 @@ void Handler::Update(const Frame& frame)
 		case PREPARE2:
 		case PREPARE4:
 		{
-			auto movement = hand.palmVelocity().dot(Vector::down());
-			std::cout << movement << std:: endl;
+			auto movement = hand.palmVelocity().dot(Vector::down());;
 			if(movement>100)
 			{
 				acc += movement;
@@ -52,7 +51,6 @@ void Handler::Update(const Frame& frame)
 		case PREPARE3:
 		{
 			auto movement = hand.palmVelocity().dot(Vector::up());
-			std::cout << movement << std:: endl;
 			if(movement>100)
 			{
 				acc += movement;
@@ -72,35 +70,46 @@ void Handler::Update(const Frame& frame)
 		break;
 		case EVALUATE:
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 			
+			auto fingers = hand.fingers();
+			for(const auto& finger : fingers)
+			{
+				std::cout<< finger.type() << " - " << hand.wristPosition().distanceTo(finger.stabilizedTipPosition()) << std::endl;
+				std::cout<< hand.wristPosition() << " - " << finger.stabilizedTipPosition() << std::endl;
+			}
+
 			if(isScissor(hand))
 				cState = SCISSOR;
-			else if(isRock(hand))
-				cState = ROCK;
 			else if(isPaper(hand))
 				cState = PAPER;
+			else if(isRock(hand))
+				cState = ROCK;
 			else
 				cState = UNKNOWN;
 		}
 		break;
 		default:
-		std::cout << "Idle " << std::endl;
-		break;
+			break;
 	}
 }
 
 bool Handler::isRock(const Leap::Hand& hand)
 {
+	std::cout << "TEST ROCK" << std::endl;
 	auto fingers = hand.fingers();
-	auto center = hand.palmPosition();
+	auto wristPos = hand.wristPosition();
 
 	for(const auto& finger : fingers)
-	{
+	{		
+		auto tipPos = finger.stabilizedTipPosition();
+		auto distance = tipPos.distanceTo(wristPos);
 		
-		auto tip = finger.tipPosition();
-		if(tip.distanceTo(center)>60.0f)
-			return false;
+		if(distance>80.0f && finger.type() != 0)
+		{
+       		std::cout<< finger.type() << " - " << distance << std::endl;
+       		return false;
+       	}
 	}
 
 	return true;
@@ -109,29 +118,21 @@ bool Handler::isRock(const Leap::Hand& hand)
 
 bool Handler::isPaper(const Leap::Hand& hand)
 {
+	std::cout << "TEST PAPER" << std::endl;
     auto fingers = hand.fingers();
-	auto center = hand.palmPosition();
+	auto wristPos = hand.wristPosition();
 
     for(const auto& finger : fingers)
     {        
-       	auto tip = finger.tipPosition();
-
-       	if(finger.type()==Finger::TYPE_PINKY || finger.type()==Finger::TYPE_THUMB)
+       	auto tipPos = finger.stabilizedTipPosition();
+       	auto distance = tipPos.distanceTo(wristPos);
+       	
+       	if(distance<100.0f && finger.type() != 0)
        	{
-       		if(tip.distanceTo(center)<55.0f)
-			{
-				std::cout << finger.type()<< " - " <<tip.distanceTo(center) << std::endl;
-				return false;
-			}
+       		std::cout<< finger.type() << " - " << distance << std::endl;
+       		return false;
        	}
-       	else
-       	{
-			if(tip.distanceTo(center)<65.0f)
-			{
-				std::cout << finger.type()<< " - " <<tip.distanceTo(center) << std::endl;
-				return false;
-			}
-		}
+
     }
 
     return true;
@@ -139,44 +140,33 @@ bool Handler::isPaper(const Leap::Hand& hand)
 
 bool Handler::isScissor(const Leap::Hand& hand)
 {
+	std::cout << "TEST SCISSOR" << std::endl;
     auto fingers = hand.fingers();
-    auto center = hand.palmPosition();
+    auto wristPos = hand.wristPosition();
     Leap::Finger index, middle;
 
     for(const auto& finger : fingers)
     {
         auto type = finger.type();
-        auto tip = finger.tipPosition();
+        auto tipPos = finger.stabilizedTipPosition();
+        auto distance = tipPos.distanceTo(wristPos);
 
-        if(type==Leap::Finger::TYPE_INDEX)
+        if(type==Leap::Finger::TYPE_INDEX || type==Leap::Finger::TYPE_MIDDLE)
         {
-            index = finger;
-            if(tip.distanceTo(center)<50.0f)
+            if(distance<80.0f)
             {
-                std::cout << tip.distanceTo(center) << std::endl;
-                return false;
-            }
-        }
-        else if(type==Leap::Finger::TYPE_MIDDLE)
-        {
-            middle = finger;
-            if(tip.distanceTo(center)<80.0f)
-            {
-                std::cout << tip.distanceTo(center) << std::endl;
+                std::cout<< finger.type() << " - " << distance << std::endl;
                 return false;
             }
         }
         else
         {
-            if(tip.distanceTo(center)>80.0f)
+            if(distance>80.0f && finger.type() != 0)
+            {
+            	std::cout<< finger.type() << " - " << distance << std::endl;
                 return false;
+            }
         }
-    }
-
-    if(Util::ToDeg(middle.direction().angleTo(index.direction()))<5.0f)
-    {    
-        std::cout << Util::ToDeg(middle.direction().angleTo(index.direction())) << std::endl;
-        return false;
     }
 
     return true;
