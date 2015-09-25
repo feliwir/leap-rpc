@@ -5,9 +5,10 @@
 #include <thread>
 
 using namespace Leap;
-Handler::State Handler::cState = Handler::WAITING;
+Handler::State Handler::cState = Handler::MENU1;
 double Handler::acc = 0.0f;
 int Handler::missingFrames = 0;
+std::chrono::time_point<std::chrono::high_resolution_clock> Handler::start;
 
 void Handler::Update(const Frame& frame)
 {
@@ -18,7 +19,7 @@ void Handler::Update(const Frame& frame)
 	{
 		++missingFrames;
 		if(missingFrames>1000)
-			cState = WAITING;
+			cState = MENU1;
 		return;
 	}
 
@@ -26,6 +27,12 @@ void Handler::Update(const Frame& frame)
 
 	switch(cState)
 	{
+		case MENU1:
+		break;
+		case MENU2:
+		break;
+		case MENU3:
+		break;
 		case WAITING:
 		case PREPARE2:
 		case PREPARE4:
@@ -70,8 +77,19 @@ void Handler::Update(const Frame& frame)
 		break;
 		case EVALUATE:
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-			
+			start = std::chrono::high_resolution_clock::now();
+			cState = EVALUATE2;
+		}
+		break;
+		case EVALUATE2:
+		{
+			auto end = std::chrono::high_resolution_clock::now();
+			if(!((end-start)>std::chrono::milliseconds(1000)))
+			{
+				std::cout << "WATING" << std::endl;
+				break;
+			}
+
 			auto fingers = hand.fingers();
 			for(const auto& finger : fingers)
 			{
@@ -159,7 +177,7 @@ bool Handler::isScissor(const Leap::Hand& hand)
                 return false;
             }
         }
-        else
+        else if(type==Leap::Finger::TYPE_PINKY || type==Leap::Finger::TYPE_RING)
         {
             if(distance>80.0f && finger.type() != 0)
             {
