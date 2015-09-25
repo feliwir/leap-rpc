@@ -11,7 +11,7 @@ bool Application::Initialize()
 	{}
 
 	m_window.create(sf::VideoMode(m_winWidth,m_winHeight),"LEAP");
-
+	m_window.setFramerateLimit(60);
 	if(!m_window.isOpen())
 	{
 		std::cout << "Failed to create window!" << std::endl;
@@ -67,11 +67,19 @@ void Application::Run()
 				if (event.key.code == sf::Keyboard::Return)
 				{
 					if(Handler::cState==Handler::MENU1)
+					{
+						Handler::aiBehaviour = Handler::RNG;
 						Handler::cState=Handler::WAITING;
+					}
 					else if(Handler::cState==Handler::MENU2)
+					{
+						Handler::aiBehaviour = Handler::HARD;
 						Handler::cState=Handler::WAITING;
+					}
 					else if(Handler::cState==Handler::MENU3)
 						m_window.close();
+					else if(Handler::cState==Handler::PRESENT||Handler::cState==Handler::UNKNOWN)
+						Handler::cState = Handler::WAITING;
 				}
 				else if(event.key.code == sf::Keyboard::Up)
 				{
@@ -125,15 +133,6 @@ void Application::Run()
 	   		case Handler::EVALUATE2:
 	   			text.setString("Scissor!!");
 	   			break;
-	   		case Handler::ROCK:
-	   			text.setString("R!!");
-	   			break;
-	   		case Handler::PAPER:
-	   			text.setString("P!!");
-	   			break;
-	   		case Handler::SCISSOR:
-	   			text.setString("S!!");
-	   			break;
 	   		default:
 	   			text.setString("Unknown State");
 	   			break;
@@ -146,6 +145,10 @@ void Application::Run()
 	   		m_window.draw(lblStart);
 			m_window.draw(lblOptions);
    			m_window.draw(lblQuit);
+	   }
+	   else if(Handler::cState==Handler::PRESENT)
+	   {
+	   		Present();
 	   }
 	   else
 	   {
@@ -169,4 +172,32 @@ void Application::Release()
 		m_window.close();
 
 	m_controller.removeListener(m_listener);
+}
+
+void Application::Present()
+{
+	Handler::Result playerR = Handler::playerResult;
+	Handler::Result botR = Handler::botResult;
+	sf::Text lblPlayerPts,lblBotPts;
+	std::string helper = "Player: ";
+
+	for(int i=0;i<Handler::playerPts;++i)
+		helper +='o';
+
+	lblPlayerPts.setString(helper);
+	lblPlayerPts.setPosition(50,50);
+	lblPlayerPts.setFont(m_font);
+	helper.clear();
+	helper = "Bot: ";
+	for(int i=0;i<Handler::botPts;++i)
+		helper+='o';
+
+	lblBotPts.setString(helper);
+	lblBotPts.setPosition(600,50);
+	lblBotPts.setFont(m_font);
+	helper.clear();
+
+	m_window.draw(lblPlayerPts);
+	m_window.draw(lblBotPts);
+
 }

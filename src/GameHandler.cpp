@@ -9,6 +9,14 @@ Handler::State Handler::cState = Handler::MENU1;
 double Handler::acc = 0.0f;
 int Handler::missingFrames = 0;
 std::chrono::time_point<std::chrono::high_resolution_clock> Handler::start;
+std::random_device Handler::rd;
+std::mt19937 Handler::rne(rd());
+std::uniform_int_distribution<int> Handler::uniform_dist(1,3);
+int Handler::playerPts = 0;
+int Handler::botPts = 0;
+Handler::Result Handler::playerResult = NONE;
+Handler::Result Handler::botResult = NONE;
+Handler::AIBehaviour Handler::aiBehaviour = RNG;
 
 void Handler::Update(const Frame& frame)
 {
@@ -97,14 +105,27 @@ void Handler::Update(const Frame& frame)
 				std::cout<< hand.wristPosition() << " - " << finger.stabilizedTipPosition() << std::endl;
 			}
 
+			cState = PRESENT;
+
 			if(isScissor(hand))
-				cState = SCISSOR;
+				playerResult = SCISSOR;
 			else if(isPaper(hand))
-				cState = PAPER;
+				playerResult = PAPER;
 			else if(isRock(hand))
-				cState = ROCK;
+				playerResult = ROCK;
 			else
+			{
 				cState = UNKNOWN;
+				break;
+			}
+
+			botResult = GetBotResult();
+			std::cout << "Player did choose " << playerResult << std::endl;
+			std::cout << "Bot did choose " << botResult << std::endl;
+			GivePoint();
+
+			std::cout << "Player Points: " << playerPts << std::endl;
+			std::cout << "Bot Points: " << botPts << std::endl;
 		}
 		break;
 		default:
@@ -188,4 +209,35 @@ bool Handler::isScissor(const Leap::Hand& hand)
     }
 
     return true;
+}
+
+Handler::Result Handler::GetBotResult()
+{
+	if(aiBehaviour==RNG)
+	{
+		return (Result)(uniform_dist(rne));
+	}
+	else
+	{
+		return (playerResult==SCISSOR)	? ROCK : (playerResult==ROCK) 
+										? PAPER: SCISSOR;
+	}
+}
+
+void Handler::GivePoint()
+{
+	if ((playerResult==SCISSOR && botResult==PAPER)||
+	   	(playerResult==PAPER && botResult==ROCK)||
+		(playerResult==ROCK && botResult==SCISSOR))
+	{
+		++playerPts;
+		std::cout << "Give player a point" << std::endl;	
+	}
+	else if ((botResult==SCISSOR && playerResult==PAPER)||
+	   	(botResult==PAPER && playerResult==ROCK)||
+		(botResult==ROCK && playerResult==SCISSOR))
+	{
+		++botPts;
+		std::cout << "Give bot a point" << std::endl;	
+	}		
 }

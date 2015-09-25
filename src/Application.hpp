@@ -10,6 +10,7 @@ public:
 	bool Initialize();
 	void Run();
 	void Release();
+	void Present();
 private:
 	sf::RenderWindow m_window;
 	LeapListener m_listener;
