@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <stdint.h>
 #include "Listener.hpp"
 #include "GameHandler.hpp"
@@ -23,4 +24,10 @@ private:
 	sf::Texture m_texRoc;
 	sf::Sprite m_sprBot;
 	sf::Sprite m_sprPlayer;
+	sf::SoundBuffer m_blopSb;
+	sf::Sound m_blopSound;
+	sf::SoundBuffer m_winSb;
+	sf::Sound m_winSound;
+	sf::SoundBuffer m_loseSb;
+	sf::Sound m_loseSound;
 };

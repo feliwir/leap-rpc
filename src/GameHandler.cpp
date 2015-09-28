@@ -82,9 +82,17 @@ void Handler::Update(const Frame& frame)
 		case EVALUATE2:
 		{
 			auto end = std::chrono::high_resolution_clock::now();
-			if(!((end-start)>std::chrono::milliseconds(1000)))
+			if(!((end-start)>std::chrono::milliseconds(500)))
 			{
 				std::cout << "WATING" << std::endl;
+				break;
+			}
+
+			std::cout << hand.confidence() << std::endl;
+
+			if(hand.confidence()<0.45f)
+			{
+				std::cout << "UNCONFIDENT" << std::endl;
 				break;
 			}
 

@@ -18,7 +18,7 @@ bool Application::Initialize()
 		return false;
 	}
 
-	if (!m_font.loadFromFile("data/Drifttype.ttf"))
+	if (!m_font.loadFromFile("data/sunshine.ttf"))
 	{
 	    std::cout << "Failed to load game font!" << std::endl;
 		return false;
@@ -50,6 +50,27 @@ bool Application::Initialize()
 
 	m_sprPlayer.setPosition(50,200);
 	m_sprBot.setPosition(490,200);
+
+	if(!m_blopSb.loadFromFile("data/blop.wav"))
+	{
+		std::cout << "Failed to load blop sound" << std::endl;
+	}
+
+	m_blopSound.setBuffer(m_blopSb);
+
+	if(!m_winSb.loadFromFile("data/win.wav"))
+	{
+		std::cout << "Failed to load win sound" << std::endl;
+	}
+
+	m_winSound.setBuffer(m_winSb);
+
+	if(!m_loseSb.loadFromFile("data/lose.wav"))
+	{
+		std::cout << "Failed to load lose sound" << std::endl;
+	}
+
+	m_loseSound.setBuffer(m_loseSb);
 	return true;
 }
 
@@ -57,7 +78,7 @@ void Application::Run()
 {
 	sf::Text text,lblStart,lblQuit,lblOptions;
 	text.setFont(m_font);
-	text.setCharacterSize(50);
+	text.setCharacterSize(60);
 	text.setColor(sf::Color::Red);
 
 	lblStart.setFont(m_font);
@@ -85,6 +106,7 @@ void Application::Run()
 
 	       if (event.type == sf::Event::KeyPressed)
 	       {
+	       		m_blopSound.play();
 				if (event.key.code == sf::Keyboard::Return)
 				{
 					if(Handler::cState==Handler::MENU1)
@@ -100,7 +122,16 @@ void Application::Run()
 					else if(Handler::cState==Handler::MENU3)
 						m_window.close();
 					else if(Handler::cState==Handler::PRESENT||Handler::cState==Handler::UNKNOWN)
-						Handler::cState = Handler::WAITING;
+					{
+						if(Handler::playerPts==2||Handler::botPts==2)
+						{
+							Handler::playerPts = 0;
+							Handler::botPts = 0;
+							Handler::cState = Handler::MENU1;
+						}
+						else
+							Handler::cState = Handler::WAITING;
+					}
 				}
 				else if(event.key.code == sf::Keyboard::Up)
 				{
@@ -199,7 +230,7 @@ void Application::Present()
 {
 	Handler::Result playerR = Handler::playerResult;
 	Handler::Result botR = Handler::botResult;
-	sf::Text lblPlayerPts,lblBotPts;
+	sf::Text lblPlayerPts,lblBotPts,lblMessage;
 	std::string helper = "Player: ";
 
 	for(int i=0;i<Handler::playerPts;++i)
@@ -208,14 +239,29 @@ void Application::Present()
 	lblPlayerPts.setString(helper);
 	lblPlayerPts.setPosition(50,50);
 	lblPlayerPts.setFont(m_font);
+	lblPlayerPts.setCharacterSize(40);
 	helper.clear();
-	helper = "Bot: ";
+	helper = "Computer: ";
 	for(int i=0;i<Handler::botPts;++i)
 		helper+='o';
 
+	if(Handler::playerPts==2)
+	{
+		if(m_winSound.getStatus()!=sf::Sound::Playing)
+			m_winSound.play();
+		lblMessage.setString("Player won!");
+	}
+	else if(Handler::botPts==2)
+	{
+		if(m_loseSound.getStatus()!=sf::Sound::Playing)
+			m_loseSound.play();
+		lblMessage.setString("Computer won!");
+	}
+	
 	lblBotPts.setString(helper);
-	lblBotPts.setPosition(600,50);
+	lblBotPts.setPosition(490,50);
 	lblBotPts.setFont(m_font);
+	lblBotPts.setCharacterSize(40);
 	helper.clear();
 
 	if(playerR==Handler::SCISSOR)
@@ -236,4 +282,17 @@ void Application::Present()
 	m_window.draw(lblBotPts);
 	m_window.draw(m_sprBot);
 	m_window.draw(m_sprPlayer);
+
+	if(Handler::playerPts==2||Handler::botPts==2)
+	{
+		lblMessage.setFont(m_font);
+		lblMessage.setColor(sf::Color::Red);
+		lblMessage.setCharacterSize(40);
+		auto textBounds = lblMessage.getLocalBounds();
+		auto textPos = sf::Vector2f(m_winWidth/2-textBounds.width/2,
+									   150);
+
+		lblMessage.setPosition(textPos);
+		m_window.draw(lblMessage);
+	}
 }
