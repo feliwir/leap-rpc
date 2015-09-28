@@ -4,6 +4,10 @@
 #include <random>
 #include "Player.hpp"
 
+#define TOLERATED_MISSING 	200
+#define TURN_DISTANCE 		8000
+#define MIN_MOVEMENT 		100
+
 class Handler
 {
 public:

@@ -18,4 +18,9 @@ private:
 	sf::Font m_font;
 	int16_t m_winWidth;
 	int16_t m_winHeight;
+	sf::Texture m_texPap;
+	sf::Texture m_texSci;
+	sf::Texture m_texRoc;
+	sf::Sprite m_sprBot;
+	sf::Sprite m_sprPlayer;
 };

@@ -23,16 +23,6 @@ void Handler::Update(const Frame& frame)
 
 	auto hand = frame.hands().frontmost();
 	
-	if(!hand.isValid())
-	{
-		++missingFrames;
-		if(missingFrames>1000)
-			cState = MENU1;
-		return;
-	}
-
-	missingFrames = 0;
-
 	switch(cState)
 	{
 		case MENU1:
@@ -46,11 +36,11 @@ void Handler::Update(const Frame& frame)
 		case PREPARE4:
 		{
 			auto movement = hand.palmVelocity().dot(Vector::down());;
-			if(movement>100)
+			if(movement>MIN_MOVEMENT)
 			{
 				acc += movement;
 			}
-			else if(abs(movement)<100 && acc >= 10000)
+			else if(abs(movement)<MIN_MOVEMENT && acc >= TURN_DISTANCE)
 			{
 				std::cout << "NEXT STATE" << std::endl;
 				cState = (State)((int)cState + 1);
@@ -66,11 +56,11 @@ void Handler::Update(const Frame& frame)
 		case PREPARE3:
 		{
 			auto movement = hand.palmVelocity().dot(Vector::up());
-			if(movement>100)
+			if(movement>MIN_MOVEMENT)
 			{
 				acc += movement;
 			}
-			else if(abs(movement)<100 && acc >= 20000)
+			else if(abs(movement)<MIN_MOVEMENT && acc >= TURN_DISTANCE)
 			{
 				std::cout << "NEXT STATE" << std::endl;
 				cState = (State)((int)cState + 1);
@@ -131,6 +121,21 @@ void Handler::Update(const Frame& frame)
 		default:
 			break;
 	}
+
+	if(!hand.isValid() && (cState != MENU1 && cState != MENU2 && cState != MENU3))
+	{
+		++missingFrames;
+		if(missingFrames>TOLERATED_MISSING)
+		{
+			std::cout << "GOTO MENU" << std::endl;
+			playerPts = 0;
+			botPts = 0;
+			cState = MENU1;
+		}
+		return;
+	}
+
+	missingFrames = 0;
 }
 
 bool Handler::isRock(const Leap::Hand& hand)
@@ -198,9 +203,17 @@ bool Handler::isScissor(const Leap::Hand& hand)
                 return false;
             }
         }
-        else if(type==Leap::Finger::TYPE_PINKY || type==Leap::Finger::TYPE_RING)
+        else if(type==Leap::Finger::TYPE_PINKY)
         {
-            if(distance>80.0f && finger.type() != 0)
+            if(distance>95.0f)
+            {
+            	std::cout<< finger.type() << " - " << distance << std::endl;
+                return false;
+            }
+        }
+        else if(type==Leap::Finger::TYPE_RING)
+        {
+        	if(distance>110.0f)
             {
             	std::cout<< finger.type() << " - " << distance << std::endl;
                 return false;

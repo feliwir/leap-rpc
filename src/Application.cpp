@@ -29,6 +29,27 @@ bool Application::Initialize()
 		std::cout << "Failed to add custom listener to controller!" << std::endl;
 		return false;
 	}
+
+	if(!m_texPap.loadFromFile("data/pap.png"))
+	{
+		std::cout << "Failed to load paper image!" << std::endl;
+		return false;
+	}
+
+	if(!m_texSci.loadFromFile("data/sci.png"))
+	{
+		std::cout << "Failed to load scissor image!" << std::endl;
+		return false;
+	}
+
+	if(!m_texRoc.loadFromFile("data/roc.png"))
+	{
+		std::cout << "Failed to load rock image!" << std::endl;
+		return false;
+	}
+
+	m_sprPlayer.setPosition(50,200);
+	m_sprBot.setPosition(490,200);
 	return true;
 }
 
@@ -197,7 +218,22 @@ void Application::Present()
 	lblBotPts.setFont(m_font);
 	helper.clear();
 
+	if(playerR==Handler::SCISSOR)
+		m_sprPlayer.setTexture(m_texSci);
+	else if(playerR==Handler::ROCK)
+		m_sprPlayer.setTexture(m_texRoc);
+	else if(playerR==Handler::PAPER)
+		m_sprPlayer.setTexture(m_texPap);
+
+	if(botR==Handler::SCISSOR)
+		m_sprBot.setTexture(m_texSci);
+	else if(botR==Handler::ROCK)
+		m_sprBot.setTexture(m_texRoc);
+	else if(botR==Handler::PAPER)
+		m_sprBot.setTexture(m_texPap);
+
 	m_window.draw(lblPlayerPts);
 	m_window.draw(lblBotPts);
-
+	m_window.draw(m_sprBot);
+	m_window.draw(m_sprPlayer);
 }
