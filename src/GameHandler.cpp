@@ -18,28 +18,34 @@ Handler::Result Handler::playerResult = NONE;
 Handler::Result Handler::botResult = NONE;
 Handler::AIBehaviour Handler::aiBehaviour = RNG;
 
+//This function is called by the Leap SDK
+//One frame contains all data that was collected
 void Handler::Update(const Frame& frame)
 {
-
 	auto hand = frame.hands().frontmost();
 	
+	//State machine
 	switch(cState)
 	{
+		//The menu is controlled by the Application class
 		case MENU1:
 		break;
 		case MENU2:
 		break;
 		case MENU3:
 		break;
+		//The up & down movement of our hand during the game
 		case WAITING:
 		case PREPARE2:
 		case PREPARE4:
 		{
+			//check if the hand is moving down
 			auto movement = hand.palmVelocity().dot(Vector::down());;
 			if(movement>MIN_MOVEMENT)
 			{
 				acc += movement;
 			}
+			//when the hand is stoping to move go to the next state
 			else if(abs(movement)<MIN_MOVEMENT && acc >= TURN_DISTANCE)
 			{
 				std::cout << "NEXT STATE" << std::endl;
@@ -55,11 +61,13 @@ void Handler::Update(const Frame& frame)
 		case PREPARE1:
 		case PREPARE3:
 		{
+			//check if the hand is moving up
 			auto movement = hand.palmVelocity().dot(Vector::up());
 			if(movement>MIN_MOVEMENT)
 			{
 				acc += movement;
 			}
+			//when the hand is stoping to move go to the next state
 			else if(abs(movement)<MIN_MOVEMENT && acc >= TURN_DISTANCE)
 			{
 				std::cout << "NEXT STATE" << std::endl;
@@ -73,6 +81,7 @@ void Handler::Update(const Frame& frame)
 			}
 		}
 		break;
+		//start our evaluation timer and go to the next state
 		case EVALUATE:
 		{
 			start = std::chrono::high_resolution_clock::now();
@@ -81,6 +90,8 @@ void Handler::Update(const Frame& frame)
 		break;
 		case EVALUATE2:
 		{
+			//wait until the timer has stopped, so the user has time to
+			//do his gesture
 			auto end = std::chrono::high_resolution_clock::now();
 			if(!((end-start)>std::chrono::milliseconds(500)))
 			{
@@ -88,14 +99,17 @@ void Handler::Update(const Frame& frame)
 				break;
 			}
 
+			//if the sdk isn't confident about this frane, skip this one
+			//and try the next one
 			std::cout << hand.confidence() << std::endl;
-
 			if(hand.confidence()<0.45f)
 			{
 				std::cout << "UNCONFIDENT" << std::endl;
 				break;
 			}
 
+			//get all our fingers and print them out for debugging
+			//purposes
 			auto fingers = hand.fingers();
 			for(const auto& finger : fingers)
 			{
@@ -105,6 +119,7 @@ void Handler::Update(const Frame& frame)
 
 			cState = PRESENT;
 
+			//check what motion this is
 			if(isScissor(hand))
 				playerResult = SCISSOR;
 			else if(isPaper(hand))
@@ -117,9 +132,11 @@ void Handler::Update(const Frame& frame)
 				break;
 			}
 
+			//get the choice of the computer controlled enemy
 			botResult = GetBotResult();
 			std::cout << "Player did choose " << playerResult << std::endl;
 			std::cout << "Bot did choose " << botResult << std::endl;
+			//Decide who won this round
 			GivePoint();
 
 			std::cout << "Player Points: " << playerPts << std::endl;
@@ -130,6 +147,8 @@ void Handler::Update(const Frame& frame)
 			break;
 	}
 
+	//when not in menu we check if the hand is missing. In case it is we go back to 
+	//the main menu
 	if(!hand.isValid() && (cState != MENU1 && cState != MENU2 && cState != MENU3))
 	{
 		++missingFrames;
@@ -146,6 +165,8 @@ void Handler::Update(const Frame& frame)
 	missingFrames = 0;
 }
 
+//check if all fingers are close to the palm
+//ignore the thumb
 bool Handler::isRock(const Leap::Hand& hand)
 {
 	std::cout << "TEST ROCK" << std::endl;
@@ -167,7 +188,8 @@ bool Handler::isRock(const Leap::Hand& hand)
 	return true;
 }
 
-
+//check if all fingers are far away from the palm
+//ignore the thumb
 bool Handler::isPaper(const Leap::Hand& hand)
 {
 	std::cout << "TEST PAPER" << std::endl;
@@ -190,6 +212,9 @@ bool Handler::isPaper(const Leap::Hand& hand)
     return true;
 }
 
+//check if index and middle finger are far from the palm
+//ring finger and pinky should be close to the pakm
+//ignore the thumb
 bool Handler::isScissor(const Leap::Hand& hand)
 {
 	std::cout << "TEST SCISSOR" << std::endl;
@@ -232,12 +257,15 @@ bool Handler::isScissor(const Leap::Hand& hand)
     return true;
 }
 
+//check if we are playing on random or hardcore
 Handler::Result Handler::GetBotResult()
 {
+	//return a random result
 	if(aiBehaviour==RNG)
 	{
 		return (Result)(uniform_dist(rne));
 	}
+	//return the correct result to win
 	else
 	{
 		return (playerResult==SCISSOR)	? ROCK : (playerResult==ROCK) 
@@ -245,6 +273,7 @@ Handler::Result Handler::GetBotResult()
 	}
 }
 
+//compare player choice and bot choice
 void Handler::GivePoint()
 {
 	if ((playerResult==SCISSOR && botResult==PAPER)||

@@ -1,5 +1,6 @@
 #pragma once
 
+//used in our gamehandler
 class Player
 {
 public:

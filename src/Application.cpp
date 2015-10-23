@@ -2,11 +2,15 @@
 #include "GameHandler.hpp"
 #include <iostream>
 
+//This function will wait until our Leapcontroller is connected
+//and afterwards launch a our window
+//It also preloads all data (fonts,sounds, images)
 bool Application::Initialize()
 {
 	m_winWidth = 800;
 	m_winHeight = 600;
 
+	//wait till we can connect to the controller
 	while(!m_controller.isConnected())
 	{}
 
@@ -18,6 +22,7 @@ bool Application::Initialize()
 		return false;
 	}
 
+	//Load all data in our data folder during startup
 	if (!m_font.loadFromFile("data/sunshine.ttf"))
 	{
 	    std::cout << "Failed to load game font!" << std::endl;
@@ -74,8 +79,13 @@ bool Application::Initialize()
 	return true;
 }
 
+//This is our main loop
+//Depending on our current gamestate there are
+//different outputs to the screen
 void Application::Run()
 {
+	//Initialize all our text that is displayed during the game
+	//set the used font for each text etc.
 	sf::Text text,lblStart,lblQuit,lblOptions;
 	text.setFont(m_font);
 	text.setCharacterSize(60);
@@ -104,8 +114,10 @@ void Application::Run()
 	       if (event.type == sf::Event::Closed)
 	           m_window.close();
 
+	       //used for menu navigation
 	       if (event.type == sf::Event::KeyPressed)
 	       {
+	       		//play a blop sound ón button press
 	       		m_blopSound.play();
 				if (event.key.code == sf::Keyboard::Return)
 				{
@@ -153,6 +165,8 @@ void Application::Run()
 	   // Clear the whole window before rendering a new frame
 	   m_window.clear();
 
+	   //depending on the current state we must change colors & content
+	   //of our labels
 	   switch(Handler::cState)
 	   {
 	   		case Handler::MENU1:
@@ -218,6 +232,7 @@ void Application::Run()
     Release();
 }
 
+//Called on shutdown
 void Application::Release()
 {
 	if(m_window.isOpen())
@@ -226,6 +241,8 @@ void Application::Release()
 	m_controller.removeListener(m_listener);
 }
 
+//This function is called upon presenting
+//the result of a game.
 void Application::Present()
 {
 	Handler::Result playerR = Handler::playerResult;
@@ -264,6 +281,8 @@ void Application::Present()
 	lblBotPts.setCharacterSize(40);
 	helper.clear();
 
+	//set the correct texture depending on what the 
+	//player picked
 	if(playerR==Handler::SCISSOR)
 		m_sprPlayer.setTexture(m_texSci);
 	else if(playerR==Handler::ROCK)

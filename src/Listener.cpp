@@ -3,12 +3,14 @@
 #include "GameHandler.hpp"
 using namespace Leap;
 
+//called during initialization
 void LeapListener::onConnect(const Controller& controller) 
 {
     std::cout << "Connected" << std::endl;
     m_cState = PREPARE;
 }
 
+//call our gamehandler with the current frame
 void LeapListener::onFrame(const Controller& controller) 
 {
     auto frame = controller.frame();
